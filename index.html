@@ -1,2000 +1,770 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project 1 — Interactive Tip Calculator & Currency Converter</title>
-
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-  <!-- =========================================================
-       CSS STYLES & RICH ANIMATIONS
-       ========================================================= -->
-  <style>
-    /* ---------------------------------------------------------
-       CSS DESIGN TOKENS (LIGHT & DARK THEMES)
-       --------------------------------------------------------- */
-    :root {
-      --bg: #f4f6fc;
-      --card: #ffffff;
-      --card-glass: rgba(255, 255, 255, 0.85);
-      --ink: #141b2d;
-      --muted: #6b768e;
-      --line: #e4e7f2;
-      --purple: #6d51f3;
-      --purple-hover: #5a3ce2;
-      --purple2: #a07aff;
-      --purple-glow: rgba(109, 81, 243, 0.35);
-      --soft: #f0ecff;
-      --shadow: 0 16px 45px rgba(28, 32, 75, 0.08);
-      --shadow-hover: 0 24px 60px rgba(109, 81, 243, 0.16);
-      --radius-sm: 10px;
-      --radius-md: 14px;
-      --radius-lg: 24px;
-      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-      --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    body.dark {
-      --bg: #0d1021;
-      --card: #161b33;
-      --card-glass: rgba(22, 27, 51, 0.88);
-      --ink: #f5f7fd;
-      --muted: #9ba4bc;
-      --line: #2b324c;
-      --purple-glow: rgba(109, 81, 243, 0.45);
-      --soft: #232044;
-      --shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-      --shadow-hover: 0 26px 70px rgba(109, 81, 243, 0.28);
-    }
-
-    /* ---------------------------------------------------------
-       GLOBAL RESET & AMBIENT BACKGROUND GLOWS
-       --------------------------------------------------------- */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      line-height: 1.5;
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    /* Animated Ambient Glow Orbs in Background */
-    body::before,
-    body::after {
-      content: '';
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.6;
-    }
-
-    body::before {
-      top: -150px;
-      left: -120px;
-      width: 550px;
-      height: 550px;
-      background: radial-gradient(circle, rgba(109, 81, 243, 0.18) 0%, transparent 68%);
-      filter: blur(55px);
-      animation: floatOrb1 16s ease-in-out infinite alternate;
-    }
-
-    body::after {
-      bottom: -160px;
-      right: -120px;
-      width: 580px;
-      height: 580px;
-      background: radial-gradient(circle, rgba(160, 122, 255, 0.16) 0%, transparent 70%);
-      filter: blur(65px);
-      animation: floatOrb2 20s ease-in-out infinite alternate-reverse;
-    }
-
-    @keyframes floatOrb1 {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(60px, 40px) scale(1.1); }
-      100% { transform: translate(-30px, 80px) scale(0.95); }
-    }
-
-    @keyframes floatOrb2 {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(-70px, -50px) scale(1.12); }
-      100% { transform: translate(40px, -90px) scale(0.92); }
-    }
-
-    button, input, select {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-      border: none;
-      background: none;
-      transition: all 0.2s var(--ease-smooth);
-    }
-
-    button:focus-visible,
-    input:focus-visible,
-    select:focus-visible {
-      outline: 3px solid #b5a6ff;
-      outline-offset: 2px;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .wrap {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 0 24px;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* ---------------------------------------------------------
-       HEADER & NAVIGATION (GLASSMORPHIC)
-       --------------------------------------------------------- */
-    header {
-      height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      animation: fadeInDown 0.6s var(--ease-smooth);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 850;
-      font-size: 24px;
-      letter-spacing: -0.9px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .brand-icon {
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      border-radius: var(--radius-md);
-      background: linear-gradient(135deg, #8865fc, #5549ce);
-      box-shadow: 0 8px 24px var(--purple-glow);
-      color: #ffffff;
-      font-size: 24px;
-      transition: transform 0.35s var(--ease-spring), box-shadow 0.35s ease;
-    }
-
-    .brand:hover .brand-icon {
-      transform: rotate(15deg) scale(1.1);
-      box-shadow: 0 10px 30px rgba(109, 81, 243, 0.5);
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nav a {
-      color: var(--muted);
-      font-size: 14px;
-      text-decoration: none;
-      padding: 10px 16px;
-      font-weight: 650;
-      border-radius: var(--radius-sm);
-      transition: color 0.2s ease, background-color 0.2s ease;
-    }
-
-    .nav a:hover {
-      color: var(--purple);
-      background: var(--soft);
-    }
-
-    .theme {
-      border: 1px solid var(--line);
-      background: var(--card);
-      color: var(--ink);
-      border-radius: var(--radius-md);
-      padding: 10px 18px;
-      font-size: 14px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-      transition: all 0.25s var(--ease-spring);
-    }
-
-    .theme:hover {
-      border-color: var(--purple);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px var(--purple-glow);
-    }
-
-    .theme:active {
-      transform: scale(0.96);
-    }
-
-    /* ---------------------------------------------------------
-       HERO BANNER WITH ANIMATED SHINE & FLOATING RINGS
-       --------------------------------------------------------- */
-    .hero {
-      background: radial-gradient(circle at 92% 16%, rgba(249, 196, 228, 0.35), transparent 32%),
-                  linear-gradient(120deg, #182352 0%, #4f41d0 55%, #a65cd2 100%);
-      border-radius: 28px;
-      padding: 50px 48px;
-      color: #ffffff;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 24px 60px rgba(79, 65, 208, 0.25);
-      margin-top: 10px;
-      animation: zoomInFade 0.7s var(--ease-smooth);
-    }
-
-    /* Ambient animated floating circles in hero */
-    .hero::before,
-    .hero::after {
-      content: '';
-      position: absolute;
-      border: 1.5px solid rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      pointer-events: none;
-      transition: transform 0.3s ease;
-    }
-
-    .hero::before {
-      width: 380px;
-      height: 380px;
-      right: -105px;
-      top: -145px;
-      animation: heroFloat1 10s ease-in-out infinite alternate;
-    }
-
-    .hero::after {
-      width: 280px;
-      height: 280px;
-      right: 95px;
-      top: 110px;
-      animation: heroFloat2 12s ease-in-out infinite alternate-reverse;
-    }
-
-    @keyframes heroFloat1 {
-      0% { transform: translateY(0) rotate(0deg); }
-      100% { transform: translateY(-16px) rotate(8deg); }
-    }
-
-    @keyframes heroFloat2 {
-      0% { transform: translateY(0) rotate(0deg); }
-      100% { transform: translateY(14px) rotate(-10deg); }
-    }
-
-    .hero-inner {
-      position: relative;
-      z-index: 1;
-      max-width: 690px;
-    }
-
-    /* Eyebrow badge with shimmering gradient */
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 7px 15px;
-      border-radius: 40px;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      animation: pulseGlow 3s ease-in-out infinite;
-    }
-
-    @keyframes pulseGlow {
-      0%, 100% { border-color: rgba(255, 255, 255, 0.3); }
-      50% { border-color: rgba(255, 255, 255, 0.65); box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2); }
-    }
-
-    .hero h1 {
-      font-size: clamp(32px, 4.4vw, 52px);
-      letter-spacing: -2px;
-      line-height: 1.12;
-      margin: 20px 0 14px;
-      font-weight: 900;
-    }
-
-    .hero p {
-      opacity: 0.9;
-      max-width: 560px;
-      font-size: 16px;
-      line-height: 1.6;
-    }
-
-    .hero-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 26px;
-    }
-
-    .hero-chips span {
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      background: rgba(255, 255, 255, 0.12);
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 700;
-      backdrop-filter: blur(6px);
-      transition: all 0.25s var(--ease-spring);
-    }
-
-    .hero-chips span:hover {
-      background: rgba(255, 255, 255, 0.24);
-      transform: translateY(-3px);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-    }
-
-    /* ---------------------------------------------------------
-       SECTION TITLE & ANIMATED STATUS PULSE
-       --------------------------------------------------------- */
-    .section-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin: 40px 0 22px;
-      gap: 16px;
-      animation: fadeInUp 0.6s var(--ease-smooth);
-    }
-
-    .section-title h2 {
-      font-size: 26px;
-      letter-spacing: -0.7px;
-      font-weight: 850;
-    }
-
-    .section-title p {
-      color: var(--muted);
-      margin-top: 4px;
-      font-size: 14px;
-    }
-
-    .status {
-      font-size: 12px;
-      color: #1e7041;
-      background: #e4f7eb;
-      border-radius: 50px;
-      padding: 8px 16px;
-      font-weight: 750;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 2px 10px rgba(30, 112, 65, 0.1);
-    }
-
-    /* Live Pulsing Beacon Dot */
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #2b7a4b;
-      position: relative;
-    }
-
-    .status-dot::after {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #2b7a4b;
-      opacity: 0.6;
-      animation: pulseBeacon 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-    }
-
-    @keyframes pulseBeacon {
-      0% { transform: scale(0.8); opacity: 0.8; }
-      100% { transform: scale(2.6); opacity: 0; }
-    }
-
-    body.dark .status {
-      background: #143522;
-      color: #8be5ab;
-    }
-
-    body.dark .status-dot,
-    body.dark .status-dot::after {
-      background: #8be5ab;
-    }
-
-    /* ---------------------------------------------------------
-       CARDS GRID (RESPONSIVE WITH STAGGERED REVEAL)
-       --------------------------------------------------------- */
-    .cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 26px;
-      align-items: start;
-    }
-
-    .cards > .card:nth-child(1) {
-      animation: cardEntrance 0.7s var(--ease-smooth) 0.1s both;
-    }
-
-    .cards > .card:nth-child(2) {
-      animation: cardEntrance 0.7s var(--ease-smooth) 0.25s both;
-    }
-
-    @keyframes cardEntrance {
-      from {
-        opacity: 0;
-        transform: translateY(28px) scale(0.98);
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Splitly — Tip & Currency Tools</title>
+    <style>
+      :root {
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Arial,
+          sans-serif;
+        color: #1a2440;
+        background: #f2f4fc;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
+      * {
+        box-sizing: border-box;
       }
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      padding: 30px;
-      box-shadow: var(--shadow);
-      min-width: 0;
-      position: relative;
-      transition: transform 0.3s var(--ease-smooth),
-                  box-shadow 0.3s var(--ease-smooth),
-                  border-color 0.3s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(109, 81, 243, 0.35);
-    }
-
-    .card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      gap: 8px;
-    }
-
-    .card-label {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .big-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: var(--radius-md);
-      background: var(--soft);
-      color: var(--purple);
-      display: grid;
-      place-items: center;
-      font-size: 24px;
-      font-weight: bold;
-      transition: transform 0.35s var(--ease-spring), box-shadow 0.3s ease, background-color 0.3s ease;
-    }
-
-    .card:hover .big-icon {
-      transform: scale(1.1) rotate(6deg);
-      box-shadow: 0 8px 22px var(--purple-glow);
-    }
-
-    .card h3 {
-      font-size: 20px;
-      letter-spacing: -0.5px;
-      font-weight: 800;
-    }
-
-    .sub {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    /* ---------------------------------------------------------
-       FORM INPUTS & INTERACTION STYLES
-       --------------------------------------------------------- */
-    .field {
-      margin-bottom: 20px;
-    }
-
-    .field > label,
-    .field-label {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-weight: 750;
-      font-size: 13px;
-      margin-bottom: 9px;
-      gap: 8px;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 550;
-    }
-
-    .inputwrap {
-      display: flex;
-      align-items: center;
-      border: 1.5px solid var(--line);
-      border-radius: 14px;
-      background: var(--card);
-      overflow: hidden;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .inputwrap:focus-within {
-      border-color: var(--purple);
-      box-shadow: 0 0 0 4px rgba(109, 81, 243, 0.15);
-    }
-
-    .prefix {
-      background: var(--soft);
-      color: var(--purple);
-      font-weight: 850;
-      align-self: stretch;
-      display: flex;
-      align-items: center;
-      padding: 0 18px;
-      user-select: none;
-      transition: background-color 0.2s ease;
-    }
-
-    .inputwrap input {
-      width: 100%;
-      border: none;
-      background: transparent;
-      color: var(--ink);
-      outline: none;
-      padding: 14px 15px;
-      font-size: 16px;
-      font-weight: 650;
-      min-width: 0;
-    }
-
-    input[type="number"] {
-      appearance: textfield;
-      -moz-appearance: textfield;
-    }
-
-    input::-webkit-inner-spin-button,
-    input::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    /* Dropdown Selects */
-    .tip-country,
-    .currencies select {
-      width: 100%;
-      border: 1.5px solid var(--line);
-      border-radius: 14px;
-      padding: 13px 14px;
-      background: var(--card);
-      color: var(--ink);
-      font-weight: 650;
-      cursor: pointer;
-      outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .tip-country:focus,
-    .currencies select:focus {
-      border-color: var(--purple);
-      box-shadow: 0 0 0 4px rgba(109, 81, 243, 0.15);
-    }
-
-    /* Quick Tip Percentage Buttons with Pop Effect */
-    .quick {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .quick button {
-      flex: 1;
-      border-radius: 12px;
-      background: var(--bg);
-      color: var(--ink);
-      padding: 11px 10px;
-      border: 1.5px solid var(--line);
-      font-weight: 800;
-      font-size: 14px;
-      min-width: 56px;
-      transition: all 0.2s var(--ease-spring);
-    }
-
-    .quick button:hover {
-      background: var(--soft);
-      border-color: var(--purple);
-      transform: translateY(-2px);
-    }
-
-    .quick button:active {
-      transform: scale(0.94);
-    }
-
-    .quick button.active {
-      background: var(--purple);
-      color: #ffffff;
-      border-color: var(--purple);
-      box-shadow: 0 8px 22px var(--purple-glow);
-      transform: translateY(-2px);
-    }
-
-    /* Custom Smooth Range Slider */
-    .range {
-      width: 100%;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--line);
-      margin: 16px 0 4px;
-      outline: none;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    .range::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--purple);
-      border: 3px solid #ffffff;
-      box-shadow: 0 4px 12px var(--purple-glow);
-      cursor: pointer;
-      transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
-    }
-
-    .range::-webkit-slider-thumb:hover {
-      transform: scale(1.3);
-      box-shadow: 0 6px 18px rgba(109, 81, 243, 0.6);
-    }
-
-    .range::-webkit-slider-thumb:active {
-      transform: scale(1.15);
-    }
-
-    .range::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--purple);
-      border: 3px solid #ffffff;
-      box-shadow: 0 4px 12px var(--purple-glow);
-      cursor: pointer;
-      transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
-    }
-
-    .range::-moz-range-thumb:hover {
-      transform: scale(1.3);
-    }
-
-    /* Counter Controls (+ and -) */
-    .counter {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .counter button {
-      height: 44px;
-      width: 44px;
-      flex-shrink: 0;
-      background: var(--soft);
-      color: var(--purple);
-      border-radius: 12px;
-      font-weight: 850;
-      font-size: 22px;
-      display: grid;
-      place-items: center;
-      transition: all 0.2s var(--ease-spring);
-    }
-
-    .counter button:hover {
-      background: var(--purple);
-      color: #ffffff;
-      transform: scale(1.08);
-      box-shadow: 0 6px 18px var(--purple-glow);
-    }
-
-    .counter button:active {
-      transform: scale(0.92);
-    }
-
-    .counter input {
-      width: 100%;
-      height: 44px;
-      border-radius: 12px;
-      border: 1.5px solid var(--line);
-      color: var(--ink);
-      background: var(--card);
-      text-align: center;
-      font-weight: 850;
-      font-size: 17px;
-      outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .counter input:focus {
-      border-color: var(--purple);
-      box-shadow: 0 0 0 4px rgba(109, 81, 243, 0.15);
-    }
-
-    .error {
-      color: #e04456;
-      font-size: 12px;
-      min-height: 18px;
-      margin-top: 6px;
-      font-weight: 600;
-      animation: shakeError 0.3s ease;
-    }
-
-    @keyframes shakeError {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      75% { transform: translateX(4px); }
-    }
-
-    /* ---------------------------------------------------------
-       CURRENCY CONVERTER CONTROLS & ANIMATED SWAP
-       --------------------------------------------------------- */
-    .currencies {
-      display: grid;
-      grid-template-columns: 1fr 50px 1fr;
-      align-items: end;
-      gap: 10px;
-    }
-
-    .currencies label {
-      display: block;
-      font-size: 13px;
-      font-weight: 750;
-      margin-bottom: 9px;
-    }
-
-    .swap {
-      height: 48px;
-      width: 50px;
-      border-radius: 14px;
-      background: var(--soft);
-      color: var(--purple);
-      font-size: 20px;
-      font-weight: 850;
-      display: grid;
-      place-items: center;
-      transition: transform 0.45s var(--ease-spring),
-                  background-color 0.2s ease,
-                  color 0.2s ease,
-                  box-shadow 0.2s ease;
-    }
-
-    .swap:hover {
-      background: var(--purple);
-      color: #ffffff;
-      transform: rotate(180deg) scale(1.1);
-      box-shadow: 0 8px 20px var(--purple-glow);
-    }
-
-    .swap:active {
-      transform: rotate(180deg) scale(0.92);
-    }
-
-    /* Popular Currency Pair Chips */
-    .popular-pairs {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin: 14px 0 18px;
-    }
-
-    .popular-pairs span {
-      width: 100%;
-      font-size: 12px;
-      font-weight: 750;
-      color: var(--muted);
-    }
-
-    .popular-pairs button {
-      border: 1.5px solid var(--line);
-      border-radius: 999px;
-      background: var(--bg);
-      color: var(--ink);
-      padding: 7px 14px;
-      font-size: 13px;
-      font-weight: 700;
-      transition: all 0.2s var(--ease-spring);
-    }
-
-    .popular-pairs button:hover {
-      transform: translateY(-2px);
-      background: var(--soft);
-      border-color: var(--purple);
-      box-shadow: 0 4px 14px var(--purple-glow);
-    }
-
-    .popular-pairs button:active {
-      transform: scale(0.95);
-    }
-
-    /* Primary Action Button with Glowing Shine Sweep */
-    .primary {
-      width: 100%;
-      border-radius: 14px;
-      padding: 15px 20px;
-      font-weight: 850;
-      font-size: 16px;
-      color: #ffffff;
-      background: linear-gradient(135deg, #6d51f3, #8762f9);
-      box-shadow: 0 10px 25px var(--purple-glow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
-    }
-
-    .primary::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -120%;
-      width: 80%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-      transform: skewX(-25deg);
-      transition: 0.6s ease;
-    }
-
-    .primary:hover::before {
-      left: 150%;
-    }
-
-    .primary:hover {
-      background: linear-gradient(135deg, #5b3fe4, #7853f0);
-      transform: translateY(-2px);
-      box-shadow: 0 14px 34px rgba(109, 81, 243, 0.45);
-    }
-
-    .primary:active {
-      transform: scale(0.97);
-    }
-
-    /* ---------------------------------------------------------
-       RESULT BOXES & NUMBER POP ANIMATION
-       --------------------------------------------------------- */
-    .result {
-      background: linear-gradient(135deg, #4838c6 0%, #6f5beb 50%, #9471ff 100%);
-      color: #ffffff;
-      border-radius: 20px;
-      padding: 26px;
-      margin-top: 24px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 16px 40px rgba(72, 56, 198, 0.32);
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .result:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 50px rgba(72, 56, 198, 0.42);
-    }
-
-    /* Subtle glow shine circle inside result box */
-    .result::after {
-      content: '';
-      position: absolute;
-      top: -40%;
-      right: -30%;
-      width: 250px;
-      height: 250px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 70%);
-      pointer-events: none;
-    }
-
-    .result .label {
-      font-size: 12px;
-      opacity: 0.85;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
-
-    .result .total {
-      font-size: 40px;
-      font-weight: 900;
-      letter-spacing: -1.3px;
-      margin: 4px 0 18px;
-      word-break: break-word;
-      transition: transform 0.25s var(--ease-spring);
-    }
-
-    /* Dynamic number pop micro-animation */
-    .pop-animate {
-      animation: numberPop 0.35s var(--ease-spring);
-    }
-
-    @keyframes numberPop {
-      0% { transform: scale(1); }
-      40% { transform: scale(1.06); filter: brightness(1.2); }
-      100% { transform: scale(1); filter: brightness(1); }
-    }
-
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      padding-top: 11px;
-      margin-top: 10px;
-      border-top: 1px solid rgba(255, 255, 255, 0.22);
-    }
-
-    .result-row strong {
-      font-size: 15px;
-      font-weight: 750;
-    }
-
-    .currency-result {
-      border: 1.5px solid rgba(174, 159, 250, 0.4);
-      background: linear-gradient(140deg, var(--soft), var(--card));
-      border-radius: 20px;
-      padding: 24px;
-      margin-top: 22px;
-      box-shadow: 0 10px 30px rgba(109, 81, 243, 0.08);
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .currency-result:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 38px rgba(109, 81, 243, 0.14);
-    }
-
-    .currency-result p {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .currency-result h4 {
-      color: var(--purple);
-      font-size: clamp(28px, 3.2vw, 38px);
-      letter-spacing: -1px;
-      margin: 6px 0 4px;
-      word-break: break-word;
-      font-weight: 900;
-      transition: transform 0.25s var(--ease-spring);
-    }
-
-    .rate {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 650;
-    }
-
-    /* Card Action Buttons */
-    .card-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-    }
-
-    .outline {
-      border: 1.5px solid var(--line);
-      background: var(--card);
-      color: var(--ink);
-      border-radius: 12px;
-      padding: 10px 16px;
-      font-size: 13px;
-      font-weight: 750;
-      transition: all 0.2s var(--ease-spring);
-    }
-
-    .outline:hover {
-      border-color: var(--purple);
-      color: var(--purple);
-      background: var(--soft);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 14px var(--purple-glow);
-    }
-
-    .outline:active {
-      transform: scale(0.95);
-    }
-
-    /* ---------------------------------------------------------
-       CONVERSION HISTORY LIST
-       --------------------------------------------------------- */
-    .history {
-      margin-top: 28px;
-      border-top: 1px solid var(--line);
-      padding-top: 20px;
-    }
-
-    .history-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .history-head b {
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .history-head button {
-      color: var(--purple);
-      font-weight: 750;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      transition: background-color 0.15s ease;
-    }
-
-    .history-head button:hover {
-      background: var(--soft);
-      text-decoration: underline;
-    }
-
-    .history-list {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      max-height: 180px;
-      overflow-y: auto;
-    }
-
-    .history-list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid var(--line);
-      font-size: 13px;
-      padding: 10px 0;
-      animation: fadeInUp 0.3s ease;
-    }
-
-    .history-list li span {
-      color: var(--muted);
-      font-weight: 700;
-      font-size: 11px;
-    }
-
-    .note {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 14px;
-      line-height: 1.5;
-    }
-
-    /* ---------------------------------------------------------
-       FEATURES HIGHLIGHTS (MICRO-INTERACTIONS)
-       --------------------------------------------------------- */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      margin: 36px 0 48px;
-      animation: fadeInUp 0.7s var(--ease-smooth);
-    }
-
-    .feature {
-      border: 1.5px solid var(--line);
-      padding: 22px;
-      border-radius: 20px;
-      background: var(--card);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
-      transition: transform 0.3s var(--ease-spring),
-                  box-shadow 0.3s ease,
-                  border-color 0.3s ease;
-    }
-
-    .feature:hover {
-      transform: translateY(-6px);
-      border-color: rgba(109, 81, 243, 0.4);
-      box-shadow: 0 16px 36px var(--purple-glow);
-    }
-
-    .feature-icon {
-      font-size: 26px;
-      margin-bottom: 12px;
-      display: inline-block;
-      transition: transform 0.35s var(--ease-spring);
-    }
-
-    .feature:hover .feature-icon {
-      transform: scale(1.25) rotate(10deg);
-    }
-
-    .feature b {
-      font-size: 16px;
-      display: block;
-      margin-bottom: 4px;
-      font-weight: 800;
-    }
-
-    .feature p {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    /* ---------------------------------------------------------
-       FOOTER & TOAST POPUP
-       --------------------------------------------------------- */
-    footer {
-      padding: 26px 0 40px;
-      color: var(--muted);
-      font-size: 13px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      border-top: 1px solid var(--line);
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 26px;
-      left: 50%;
-      transform: translate(-50%, 20px) scale(0.95);
-      opacity: 0;
-      pointer-events: none;
-      padding: 13px 26px;
-      background: #181d36;
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: 750;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(10px);
-      transition: opacity 0.25s var(--ease-spring), transform 0.25s var(--ease-spring);
-      z-index: 1000;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translate(-50%, 0) scale(1);
-    }
-
-    /* ---------------------------------------------------------
-       KEYFRAME ANIMATIONS
-       --------------------------------------------------------- */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
+      body {
+        margin: 0;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+      button,
+      input,
+      select {
+        font: inherit;
       }
-    }
-
-    @keyframes fadeInDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
+      button {
+        cursor: pointer;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes zoomInFade {
-      from {
-        opacity: 0;
-        transform: scale(0.97);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    /* ---------------------------------------------------------
-       RESPONSIVE MEDIA QUERIES
-       --------------------------------------------------------- */
-    @media (max-width: 850px) {
-      .cards {
-        grid-template-columns: 1fr;
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #ab9bff;
+        outline-offset: 2;
       }
       .hero {
-        padding: 38px 30px;
+        background: linear-gradient(120deg, #1b2957, #5d4de1 58%, #8f64d7);
+        color: white;
+        padding: 28px max(22px, calc((100vw - 1140px) / 2)) 105px;
       }
-      .features {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .wrap {
-        padding: 0 16px;
-      }
-      header {
-        height: 70px;
-      }
-      .nav a {
-        display: none;
-      }
-      .hero {
-        border-radius: 20px;
-        padding: 28px 20px;
-      }
-      .hero h1 {
+      .brand {
+        font-size: 23px;
+        font-weight: 850;
         letter-spacing: -1px;
       }
+      .hero h1 {
+        font-size: clamp(32px, 5vw, 54px);
+        line-height: 1.08;
+        margin: 58px 0 14px;
+        letter-spacing: -1.8px;
+        max-width: 750px;
+      }
+      .hero p {
+        color: #e9e5ff;
+        max-width: 640px;
+        font-size: 16px;
+      }
+      .tag {
+        font-size: 12px;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+        color: #d5ceff;
+      }
+      .wrap {
+        max-width: 1140px;
+        margin: -62px auto 40px;
+        padding: 0 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+      }
       .card {
-        padding: 22px 18px;
-        border-radius: 20px;
+        background: white;
+        border: 1px solid #e3e7f2;
+        border-radius: 22px;
+        box-shadow: 0 18px 42px #212c6417;
+        padding: 26px;
+        min-width: 0;
       }
-      .section-title {
-        margin-top: 30px;
-        flex-direction: column;
-        align-items: flex-start;
+      .heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
-      .features {
-        grid-template-columns: 1fr;
+      .step {
+        background: #6350e1;
+        color: white;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        height: 37px;
+        width: 37px;
+        font-weight: 800;
+      }
+      h2 {
+        font-size: 22px;
+        margin: 0;
+        letter-spacing: -0.6px;
+      }
+      .muted {
+        color: #66738e;
+        font-size: 13px;
+        margin: 8px 0 22px;
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 750;
+        margin-bottom: 7px;
+      }
+      .field {
+        margin: 0 0 17px;
+      }
+      input,
+      select {
+        min-height: 48px;
+        width: 100%;
+        padding: 11px 13px;
+        background: #fbfcff;
+        border: 1.5px solid #dce2f0;
+        border-radius: 12px;
+        color: #1a2440;
+      }
+      .twocol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 7px 0 18px;
+      }
+      .chip {
+        border: 1px solid #e5e0ff;
+        border-radius: 10px;
+        background: #f7f5ff;
+        color: #5d4ad1;
+        padding: 9px 14px;
+        font-weight: 750;
+      }
+      .chip.active {
+        background: #6552e5;
+        color: white;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .primary {
+        background: linear-gradient(110deg, #6552e5, #9672f2);
+        color: white;
+        border: 0;
+        border-radius: 12px;
+        padding: 13px 16px;
+        font-weight: 800;
+        min-height: 48px;
+        flex: 1;
+      }
+      .secondary {
+        background: white;
+        color: #29375a;
+        border: 1px solid #dce2f0;
+        border-radius: 12px;
+        padding: 12px 15px;
+        min-height: 48px;
+        font-weight: 750;
+      }
+      .results {
+        margin-top: 20px;
+        background: #f7f5ff;
+        border-radius: 16px;
+        border: 1px solid #e7e2ff;
+        padding: 18px;
+      }
+      .line {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+        margin: 9px 0;
+      }
+      .line span {
+        color: #62708d;
+      }
+      .line strong {
+        font-variant-numeric: tabular-nums;
+      }
+      .line.big {
+        border-top: 1px solid #e0dbfa;
+        margin-top: 13px;
+        padding-top: 13px;
+      }
+      .line.big strong {
+        font-size: 24px;
+        color: #5a46d1;
+      }
+      .swaprow {
+        display: flex;
+        justify-content: center;
+        margin: -2px 0 10px;
+      }
+      .swap {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid #e6defc;
+        background: #f7f5ff;
+        color: #6552e5;
+        font-size: 23px;
       }
       .status {
-        display: none;
+        font-size: 12px;
+        min-height: 25px;
+        margin-top: 12px;
+        color: #5e6b83;
+      }
+      .status.ok {
+        color: #176d55;
+      }
+      .status.error {
+        color: #af354d;
+      }
+      .currency-result {
+        background: #252f68;
+        color: white;
+        border-radius: 17px;
+        padding: 22px;
+        margin-top: 14px;
+        min-height: 155px;
+      }
+      .currency-result small {
+        color: #d5d9f4;
+      }
+      .value {
+        font-weight: 850;
+        font-size: clamp(26px, 4vw, 39px);
+        letter-spacing: -1px;
+        margin: 10px 0;
+        overflow-wrap: anywhere;
+      }
+      .rate {
+        font-size: 12px;
+        color: #d8ddff;
+        overflow-wrap: anywhere;
+      }
+      .help {
+        font-size: 12px;
+        color: #687792;
+        margin: 13px 0 0;
+      }
+      .manual {
+        margin-top: 13px;
+        border: 1px dashed #c8baff;
+        border-radius: 12px;
+        padding: 13px;
+        background: #faf9ff;
+      }
+      .manual summary {
+        cursor: pointer;
+        font-weight: 750;
+        color: #5846c5;
+      }
+      .manual p {
+        margin: 8px 0;
+        font-size: 12px;
+        color: #64708c;
+      }
+      .manual .field {
+        margin: 8px 0;
+      }
+      .note {
+        font-size: 12px;
+        color: #a23e55;
+        min-height: 18px;
+        margin-top: 8px;
       }
       footer {
-        flex-direction: column;
+        font-size: 12px;
+        color: #78849b;
+        text-align: center;
+        padding: 0 15px 35px;
       }
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <!-- Top Header & Brand -->
-    <header>
-      <div class="brand">
-        <div class="brand-icon">✦</div>
-        <span>Splitly<span style="color: var(--purple);">.</span></span>
-      </div>
-      <nav class="nav">
-        <a href="#tools">Tools</a>
-        <a href="#features">Features</a>
-        <button id="themeBtn" class="theme" type="button" aria-label="Toggle dark/light mode">
-          ☾ Dark mode
-        </button>
-      </nav>
+      @media (max-width: 780px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .card {
+          padding: 21px;
+        }
+        .hero h1 {
+          margin-top: 42px;
+        }
+        .hero {
+          padding-bottom: 100px;
+        }
+      }
+      @media (max-width: 390px) {
+        .twocol {
+          grid-template-columns: 1fr;
+        }
+        .actions {
+          flex-wrap: wrap;
+        }
+        .secondary {
+          flex: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="brand">splitly.</div>
+      <h1>Better tips. Smarter conversions.</h1>
+      <p>
+        One beautiful place to split bills and convert currencies using
+        published exchange rates.
+      </p>
+      <div class="tag">HTML · CSS · JavaScript project</div>
     </header>
-
-    <main>
-      <!-- Hero Section -->
-      <section class="hero">
-        <div class="hero-inner">
-          <span class="eyebrow">✦ PROJECT 1 · INTERACTIVE MONEY COMPANION</span>
-          <h1>Smart calculations.<br>Beautifully simple.</h1>
-          <p>
-            Split bills fairly, customize the exact tip,
-            and convert currencies instantly — built with HTML, CSS, and vanilla JavaScript.
-          </p>
-          <div class="hero-chips">
-            <span>✓ Instant results</span>
-            <span>✓ Works offline</span>
-            <span>✓ Fully Responsive</span>
+    <main class="wrap">
+      <div class="grid">
+        <section class="card">
+          <div class="heading">
+            <span class="step">01</span>
+            <h2>Tip Calculator</h2>
           </div>
-        </div>
-      </section>
-
-      <!-- Section Title & Live Status Indicator -->
-      <div class="section-title" id="tools">
-        <div>
-          <h2>Your money tools</h2>
-          <p>Interactive Tip Calculator &amp; Currency Converter.</p>
-        </div>
-        <span class="status">
-          <span class="status-dot"></span>
-          Ready to calculate
-        </span>
-      </div>
-
-      <!-- Main Cards Grid -->
-      <div class="cards">
-
-        <!-- =====================================================
-             CARD 1: TIP CALCULATOR
-             ===================================================== -->
-        <section class="card" aria-labelledby="tipTitle">
-          <div class="card-head">
-            <div class="card-label">
-              <div class="big-icon">⌁</div>
-              <div>
-                <h3 id="tipTitle">Tip calculator</h3>
-                <p class="sub">Split the bill, not the stress</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Currency Selection for Tip -->
+          <p class="muted">Your bill, your tip, your preferred currency.</p>
           <div class="field">
-            <label for="tipCurrency">
-              <span>Bill country / currency</span>
-            </label>
-            <select id="tipCurrency" class="tip-country">
-              <option value="USD">🇺🇸 USD — United States · Dollar</option>
-              <option value="INR" selected>🇮🇳 INR — India · Rupee</option>
-              <option value="EUR">🇪🇺 EUR — Eurozone · Euro</option>
-              <option value="GBP">🇬🇧 GBP — United Kingdom · Pound</option>
-              <option value="JPY">🇯🇵 JPY — Japan · Yen</option>
-              <option value="CAD">🇨🇦 CAD — Canada · Dollar</option>
-              <option value="AUD">🇦🇺 AUD — Australia · Dollar</option>
-              <option value="NZD">🇳🇿 NZD — New Zealand · Dollar</option>
-              <option value="CHF">🇨🇭 CHF — Switzerland · Franc</option>
-              <option value="CNY">🇨🇳 CNY — China · Yuan</option>
-              <option value="HKD">🇭🇰 HKD — Hong Kong · Dollar</option>
-              <option value="SGD">🇸🇬 SGD — Singapore · Dollar</option>
-              <option value="AED">🇦🇪 AED — UAE · Dirham</option>
-              <option value="SAR">🇸🇦 SAR — Saudi Arabia · Riyal</option>
-              <option value="QAR">🇶🇦 QAR — Qatar · Riyal</option>
-              <option value="KWD">🇰🇼 KWD — Kuwait · Dinar</option>
-              <option value="BHD">🇧🇭 BHD — Bahrain · Dinar</option>
-              <option value="OMR">🇴🇲 OMR — Oman · Rial</option>
-              <option value="PKR">🇵🇰 PKR — Pakistan · Rupee</option>
-              <option value="BDT">🇧🇩 BDT — Bangladesh · Taka</option>
-              <option value="NPR">🇳🇵 NPR — Nepal · Rupee</option>
-              <option value="LKR">🇱🇰 LKR — Sri Lanka · Rupee</option>
-              <option value="KRW">🇰🇷 KRW — South Korea · Won</option>
-              <option value="THB">🇹🇭 THB — Thailand · Baht</option>
-              <option value="MYR">🇲🇾 MYR — Malaysia · Ringgit</option>
-              <option value="IDR">🇮🇩 IDR — Indonesia · Rupiah</option>
-              <option value="PHP">🇵🇭 PHP — Philippines · Peso</option>
-              <option value="VND">🇻🇳 VND — Vietnam · Dong</option>
-            </select>
-            <p class="note">Amounts are calculated in your chosen currency without conversion.</p>
+            <label for="tipCurrency">Bill currency</label
+            ><select id="tipCurrency"></select>
           </div>
-
-          <!-- Bill Amount Input -->
           <div class="field">
-            <label for="bill">
-              <span>Bill amount</span>
-              <span class="hint">Before tip</span>
-            </label>
-            <div class="inputwrap">
-              <span class="prefix" id="tipBillSymbol">₹</span>
-              <input id="bill" type="number" min="0" step="0.01" value="1250" placeholder="Enter bill amount">
+            <label for="bill">Bill amount</label
+            ><input id="bill" type="number" value="1200" min="0" step="any" />
+          </div>
+          <label for="tip">Tip percentage</label>
+          <div class="chips">
+            <button type="button" class="chip" data-tip="5">5%</button
+            ><button type="button" class="chip active" data-tip="10">10%</button
+            ><button type="button" class="chip" data-tip="15">15%</button
+            ><button type="button" class="chip" data-tip="20">20%</button>
+          </div>
+          <div class="twocol">
+            <div class="field">
+              <label for="tip">Custom tip (%)</label
+              ><input
+                id="tip"
+                type="number"
+                value="10"
+                min="0"
+                max="100"
+                step="any"
+              />
+            </div>
+            <div class="field">
+              <label for="people">People</label
+              ><input id="people" type="number" value="2" min="1" step="1" />
             </div>
           </div>
-
-          <!-- Tip Percentage Selection -->
-          <div class="field">
-            <div class="field-label">
-              <span>Choose a tip</span>
-              <span id="tipValue" style="color: var(--purple); font-weight: 850;">15%</span>
-            </div>
-            <div class="quick">
-              <button type="button" data-tip="5">5%</button>
-              <button type="button" data-tip="10">10%</button>
-              <button type="button" data-tip="15" class="active">15%</button>
-              <button type="button" data-tip="20">20%</button>
-            </div>
-            <input id="tip" class="range" aria-label="Tip percentage slider" type="range" min="0" max="50" step="1" value="15">
+          <div class="actions">
+            <button type="button" class="primary" id="calculateTip">
+              Calculate Tip</button
+            ><button type="button" class="secondary" id="resetTip">
+              Reset
+            </button>
           </div>
-
-          <!-- Number of People Counter -->
-          <div class="field">
-            <label for="people">
-              <span>Split between</span>
-              <span class="hint">People sharing the bill</span>
-            </label>
-            <div class="counter">
-              <button id="minus" aria-label="Decrease people count" type="button">−</button>
-              <input id="people" type="number" min="1" max="1000" step="1" value="2">
-              <button id="plus" aria-label="Increase people count" type="button">+</button>
+          <div class="note" id="tipError" role="alert"></div>
+          <div class="results" aria-live="polite">
+            <div class="line">
+              <span>Tip amount</span><strong id="tipAmount">—</strong>
             </div>
-            <div id="tipError" class="error" role="alert"></div>
-          </div>
-
-          <!-- Tip Calculation Results -->
-          <div class="result" aria-live="polite">
-            <div class="label">Each person pays</div>
-            <div class="total" id="perPerson">₹718.75</div>
-            <div class="result-row">
-              <span>Tip amount</span>
-              <strong id="tipAmount">₹187.50</strong>
+            <div class="line">
+              <span>Total bill</span><strong id="total">—</strong>
             </div>
-            <div class="result-row">
-              <span>Grand total</span>
-              <strong id="grandTotal">₹1,437.50</strong>
+            <div class="line big">
+              <span>Per person</span><strong id="perPerson">—</strong>
             </div>
-            <div class="result-row">
-              <span>Tip per person</span>
-              <strong id="tipPerPerson">₹93.75</strong>
-            </div>
-          </div>
-
-          <!-- Tip Actions -->
-          <div class="card-actions">
-            <button type="button" id="copyTip" class="outline">⧉ Copy breakdown</button>
-            <button type="button" id="resetTip" class="outline">↺ Reset</button>
           </div>
         </section>
-
-        <!-- =====================================================
-             CARD 2: CURRENCY CONVERTER
-             ===================================================== -->
-        <section class="card" aria-labelledby="currencyTitle">
-          <div class="card-head">
-            <div class="card-label">
-              <div class="big-icon">⇄</div>
-              <div>
-                <h3 id="currencyTitle">Currency converter</h3>
-                <p class="sub">Convert with a single tap</p>
-              </div>
-            </div>
+        <section class="card">
+          <div class="heading">
+            <span class="step">02</span>
+            <h2>Currency Converter</h2>
           </div>
-
-          <!-- Amount to Convert -->
+          <p class="muted">
+            20 currencies · Multiple exchange-rate sources · Rate date shown.
+          </p>
           <div class="field">
-            <label for="amount">Amount to convert</label>
-            <div class="inputwrap">
-              <span class="prefix" id="currencySymbol">$</span>
-              <input id="amount" type="number" min="0" step="any" value="100" placeholder="Enter an amount">
+            <label for="amount">Amount</label
+            ><input
+              id="amount"
+              type="number"
+              value="500000"
+              min="0"
+              step="any"
+            />
+          </div>
+          <div class="twocol">
+            <div class="field">
+              <label for="from">From</label
+              ><select id="from"></select>
+            </div>
+            <div class="field">
+              <label for="to">To</label
+              ><select id="to"></select>
             </div>
           </div>
-
-          <!-- From and To Dropdowns with Swap Button -->
-          <div class="field currencies">
-            <div>
-              <label for="from">From</label>
-              <select id="from">
-                <option value="USD" selected>🇺🇸 USD — United States · Dollar</option>
-                <option value="INR">🇮🇳 INR — India · Rupee</option>
-                <option value="EUR">🇪🇺 EUR — Eurozone · Euro</option>
-                <option value="GBP">🇬🇧 GBP — United Kingdom · Pound</option>
-                <option value="JPY">🇯🇵 JPY — Japan · Yen</option>
-                <option value="CAD">🇨🇦 CAD — Canada · Dollar</option>
-                <option value="AUD">🇦🇺 AUD — Australia · Dollar</option>
-                <option value="NZD">🇳🇿 NZD — New Zealand · Dollar</option>
-                <option value="CHF">🇨🇭 CHF — Switzerland · Franc</option>
-                <option value="CNY">🇨🇳 CNY — China · Yuan</option>
-                <option value="HKD">🇭🇰 HKD — Hong Kong · Dollar</option>
-                <option value="SGD">🇸🇬 SGD — Singapore · Dollar</option>
-                <option value="AED">🇦🇪 AED — UAE · Dirham</option>
-                <option value="SAR">🇸🇦 SAR — Saudi Arabia · Riyal</option>
-                <option value="QAR">🇶🇦 QAR — Qatar · Riyal</option>
-                <option value="KWD">🇰🇼 KWD — Kuwait · Dinar</option>
-                <option value="BHD">🇧🇭 BHD — Bahrain · Dinar</option>
-                <option value="OMR">🇴🇲 OMR — Oman · Rial</option>
-                <option value="PKR">🇵🇰 PKR — Pakistan · Rupee</option>
-                <option value="BDT">🇧🇩 BDT — Bangladesh · Taka</option>
-                <option value="NPR">🇳🇵 NPR — Nepal · Rupee</option>
-                <option value="LKR">🇱🇰 LKR — Sri Lanka · Rupee</option>
-                <option value="KRW">🇰🇷 KRW — South Korea · Won</option>
-                <option value="THB">🇹🇭 THB — Thailand · Baht</option>
-                <option value="MYR">🇲🇾 MYR — Malaysia · Ringgit</option>
-                <option value="IDR">🇮🇩 IDR — Indonesia · Rupiah</option>
-                <option value="PHP">🇵🇭 PHP — Philippines · Peso</option>
-                <option value="VND">🇻🇳 VND — Vietnam · Dong</option>
-              </select>
-            </div>
-            <button type="button" class="swap" id="swap" aria-label="Swap from and to currencies">⇄</button>
-            <div>
-              <label for="to">To</label>
-              <select id="to">
-                <option value="USD">🇺🇸 USD — United States · Dollar</option>
-                <option value="INR" selected>🇮🇳 INR — India · Rupee</option>
-                <option value="EUR">🇪🇺 EUR — Eurozone · Euro</option>
-                <option value="GBP">🇬🇧 GBP — United Kingdom · Pound</option>
-                <option value="JPY">🇯🇵 JPY — Japan · Yen</option>
-                <option value="CAD">🇨🇦 CAD — Canada · Dollar</option>
-                <option value="AUD">🇦🇺 AUD — Australia · Dollar</option>
-                <option value="NZD">🇳🇿 NZD — New Zealand · Dollar</option>
-                <option value="CHF">🇨🇭 CHF — Switzerland · Franc</option>
-                <option value="CNY">🇨🇳 CNY — China · Yuan</option>
-                <option value="HKD">🇭🇰 HKD — Hong Kong · Dollar</option>
-                <option value="SGD">🇸🇬 SGD — Singapore · Dollar</option>
-                <option value="AED">🇦🇪 AED — UAE · Dirham</option>
-                <option value="SAR">🇸🇦 SAR — Saudi Arabia · Riyal</option>
-                <option value="QAR">🇶🇦 QAR — Qatar · Riyal</option>
-                <option value="KWD">🇰🇼 KWD — Kuwait · Dinar</option>
-                <option value="BHD">🇧🇭 BHD — Bahrain · Dinar</option>
-                <option value="OMR">🇴🇲 OMR — Oman · Rial</option>
-                <option value="PKR">🇵🇰 PKR — Pakistan · Rupee</option>
-                <option value="BDT">🇧🇩 BDT — Bangladesh · Taka</option>
-                <option value="NPR">🇳🇵 NPR — Nepal · Rupee</option>
-                <option value="LKR">🇱🇰 LKR — Sri Lanka · Rupee</option>
-                <option value="KRW">🇰🇷 KRW — South Korea · Won</option>
-                <option value="THB">🇹🇭 THB — Thailand · Baht</option>
-                <option value="MYR">🇲🇾 MYR — Malaysia · Ringgit</option>
-                <option value="IDR">🇮🇩 IDR — Indonesia · Rupiah</option>
-                <option value="PHP">🇵🇭 PHP — Philippines · Peso</option>
-                <option value="VND">🇻🇳 VND — Vietnam · Dong</option>
-              </select>
-            </div>
+          <div class="swaprow">
+            <button
+              type="button"
+              id="swap"
+              class="swap"
+              aria-label="Swap currencies"
+            >
+              ⇄
+            </button>
           </div>
-
-          <!-- Popular Currency Pairs -->
-          <div class="popular-pairs">
-            <span>Popular pairs</span>
-            <button type="button" data-pair="USD,INR">🇺🇸 → 🇮🇳</button>
-            <button type="button" data-pair="INR,AED">🇮🇳 → 🇦🇪</button>
-            <button type="button" data-pair="EUR,USD">🇪🇺 → 🇺🇸</button>
-            <button type="button" data-pair="GBP,INR">🇬🇧 → 🇮🇳</button>
+          <div class="actions">
+            <button type="button" id="convert" class="primary">
+              Convert Currency</button
+            ><button type="button" id="refresh" class="secondary">
+              Refresh rates
+            </button>
           </div>
-
-          <!-- Convert Button & Error Display -->
-          <button class="primary" id="convert" type="button">Convert currency →</button>
-          <div id="currencyError" class="error" role="alert"></div>
-
-          <!-- Currency Conversion Results -->
+          <div id="status" class="status" role="status">
+            Loading exchange rates…
+          </div>
           <div class="currency-result" aria-live="polite">
-            <p id="fromAmount">100 USD equals</p>
-            <h4 id="converted">₹8,350.00</h4>
-            <div class="rate" id="rateLine">1 USD ≈ 83.50 INR</div>
+            <small>Converted amount</small>
+            <div id="converted" class="value">Loading…</div>
+            <div id="detail" class="rate">Please wait for live rate data.</div>
           </div>
-
-          <!-- Currency Actions -->
-          <div class="card-actions">
-            <button type="button" class="outline" id="copyCurrency">⧉ Copy result</button>
-            <button type="button" class="outline" id="resetCurrency">↺ Reset</button>
-          </div>
-
-          <!-- Conversion History -->
-          <div class="history">
-            <div class="history-head">
-              <b>↻ Recent conversions</b>
-              <button type="button" id="clearHistory">Clear all</button>
+          <details class="manual" id="manualPanel">
+            <summary>Backup: Enter a known exchange rate manually</summary>
+            <p>
+              Only use this if online services are blocked. Enter how much
+              <b>1 FROM</b> equals in <b>TO</b>. The output will be labeled as
+              manually entered, not live.
+            </p>
+            <div class="field">
+              <label for="manualRate"
+                >1 <span id="manualFrom">INR</span> = how many
+                <span id="manualTo">USD</span>?</label
+              ><input
+                id="manualRate"
+                type="number"
+                min="0"
+                step="any"
+                placeholder="Enter a verified rate"
+              />
             </div>
-            <ul id="historyList" class="history-list">
-              <li><span>Your conversions will appear here.</span></li>
-            </ul>
-          </div>
-
-          <p class="note">
-            ⓘ Currencies with illustrative fixed rates. Demo purpose only; not live market rates.
+            <button type="button" class="secondary" id="manualConvert">
+              Use manual rate
+            </button>
+          </details>
+          <p class="help">
+            Rate source and publication date are displayed with each online
+            conversion. Rates are indicative; your bank may charge a spread.
+            Online rates require internet access.
           </p>
         </section>
       </div>
-
-      <!-- Feature Highlights -->
-      <section id="features" class="features">
-        <div class="feature">
-          <div class="feature-icon">⚡</div>
-          <b>Instant calculations</b>
-          <p>Tip totals update dynamically as you type, with clear per-person breakdowns.</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">☾</div>
-          <b>Responsive design</b>
-          <p>Fluid grid layout with an optional dark theme for comfortable viewing on any screen.</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🔒</div>
-          <b>Client-side &amp; private</b>
-          <p>Calculations execute locally inside your browser using pure JavaScript.</p>
-        </div>
-      </section>
     </main>
-
-    <!-- Project Footer -->
     <footer>
-      <span>© 2026 Splitly Studio · Week 1 Project: HTML, CSS &amp; JavaScript</span>
-      <span>Interactive Tip Calculator &amp; Currency Converter App</span>
+      Splitly Studio · Responsive Tip Calculator & Currency Converter
     </footer>
-  </div>
-
-  <!-- Toast Notification Popup -->
-  <div class="toast" id="toast" role="status"></div>
-
-  <!-- =========================================================
-       JAVASCRIPT LOGIC & EVENT LISTENERS
-       ========================================================= -->
-  <script>
-    /**
-     * DOM Helper: Shorthand for getElementById
-     * @param {string} id - The HTML element ID
-     * @returns {HTMLElement}
-     */
-    function el(id) {
-      return document.getElementById(id);
-    }
-
-    /**
-     * Format a numerical amount using Intl.NumberFormat
-     * @param {number} amount - The currency amount
-     * @param {string} currency - The ISO currency code
-     * @returns {string} Formatted currency string
-     */
-    function money(amount, currency) {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency,
-        maximumFractionDigits: 2
-      }).format(amount);
-    }
-
-    /**
-     * Trigger a spring pop micro-animation on numerical result updates
-     * @param {HTMLElement} element - Target element
-     */
-    function triggerPop(element) {
-      if (!element) return;
-      element.classList.remove('pop-animate');
-      // Trigger reflow to restart animation
-      void element.offsetWidth;
-      element.classList.add('pop-animate');
-    }
-
-    /**
-     * Display a floating toast message to provide user feedback
-     * @param {string} message - Text to show in the toast
-     */
-    function notify(message) {
-      const toast = el('toast');
-      toast.textContent = message;
-      toast.classList.add('show');
-      clearTimeout(notify.timer);
-      notify.timer = setTimeout(function () {
-        toast.classList.remove('show');
-      }, 2200);
-    }
-
-    /* =========================================================
-       DATA: CURRENCY SYMBOLS & BASE USD EXCHANGE RATES
-       ========================================================= */
-    const usdValue = {
-      USD: 1,
-      INR: 0.011976047904191617,
-      EUR: 1.08,
-      GBP: 1.26,
-      JPY: 0.006666666666666667,
-      CAD: 0.74,
-      AUD: 0.66,
-      NZD: 0.61,
-      CHF: 1.13,
-      CNY: 0.139,
-      HKD: 0.128,
-      SGD: 0.74,
-      AED: 0.2723,
-      SAR: 0.2667,
-      QAR: 0.2747,
-      KWD: 3.25,
-      BHD: 2.65,
-      OMR: 2.6,
-      PKR: 0.0036,
-      BDT: 0.0085,
-      NPR: 0.0075,
-      LKR: 0.0033,
-      KRW: 0.00073,
-      THB: 0.028,
-      MYR: 0.21,
-      IDR: 0.000064,
-      PHP: 0.0177,
-      VND: 0.000039
-    };
-
-    const symbols = {
-      USD: '$', INR: '₹', EUR: '€', GBP: '£', JPY: '¥', CAD: 'C$', AUD: 'A$',
-      NZD: 'NZ$', CHF: 'CHF', CNY: '¥', HKD: 'HK$', SGD: 'S$', AED: 'د.إ',
-      SAR: '﷼', QAR: 'ر.ق', KWD: 'د.ك', BHD: 'ب.د', OMR: 'ر.ع.', PKR: '₨',
-      BDT: '৳', NPR: 'रू', LKR: 'Rs', KRW: '₩', THB: '฿', MYR: 'RM',
-      IDR: 'Rp', PHP: '₱', VND: '₫'
-    };
-
-    function currencyMark(code) {
-      return symbols[code] || code;
-    }
-
-    /* =========================================================
-       MODULE 1: TIP CALCULATOR LOGIC
-       ========================================================= */
-    function calculateTip() {
-      const bill = Number(el('bill').value);
-      const tip = Number(el('tip').value);
-      const people = Number(el('people').value);
-      const selectedCurrency = el('tipCurrency').value;
-
-      el('tipBillSymbol').textContent = currencyMark(selectedCurrency);
-
-      const isValid = el('bill').value.trim() !== '' &&
-                      el('people').value.trim() !== '' &&
-                      Number.isFinite(bill) &&
-                      bill >= 0 &&
-                      Number.isInteger(people) &&
-                      people >= 1 &&
-                      people <= 1000;
-
-      el('tipValue').textContent = tip + '%';
-
-      document.querySelectorAll('[data-tip]').forEach(function (btn) {
-        btn.classList.toggle('active', Number(btn.dataset.tip) === tip);
-      });
-
-      if (!isValid) {
-        el('tipError').textContent = 'Please enter a valid bill and 1–1000 people.';
-        ['perPerson', 'tipAmount', 'grandTotal', 'tipPerPerson'].forEach(function (id) {
-          el(id).textContent = '—';
+    <script>
+      const currencyNames = {
+        INR: "India — INR",
+        USD: "United States — USD",
+        EUR: "Euro Area — EUR",
+        GBP: "United Kingdom — GBP",
+        AED: "United Arab Emirates — AED",
+        JPY: "Japan — JPY",
+        CAD: "Canada — CAD",
+        AUD: "Australia — AUD",
+        SGD: "Singapore — SGD",
+        CHF: "Switzerland — CHF",
+        SAR: "Saudi Arabia — SAR",
+        CNY: "China — CNY",
+        KRW: "South Korea — KRW",
+        NZD: "New Zealand — NZD",
+        MYR: "Malaysia — MYR",
+        THB: "Thailand — THB",
+        ZAR: "South Africa — ZAR",
+        BDT: "Bangladesh — BDT",
+        NPR: "Nepal — NPR",
+        PKR: "Pakistan — PKR",
+      };
+      const $ = (id) => document.getElementById(id);
+      for (const id of ["tipCurrency", "from", "to"])
+        for (const [code, name] of Object.entries(currencyNames)) {
+          const o = document.createElement("option");
+          o.value = code;
+          o.textContent = name;
+          $(id).append(o);
+        }
+      $("tipCurrency").value = "INR";
+      $("from").value = "INR";
+      $("to").value = "USD";
+      function money(value, code) {
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: code,
+          maximumFractionDigits: 2,
+        }).format(value);
+      }
+      function calcTip() {
+        const bill = Number($("bill").value),
+          tip = Number($("tip").value),
+          people = Number($("people").value);
+        if (
+          !$("bill").value.trim() ||
+          !$("tip").value.trim() ||
+          !$("people").value.trim() ||
+          !Number.isFinite(bill) ||
+          bill < 0 ||
+          !Number.isFinite(tip) ||
+          tip < 0 ||
+          tip > 100 ||
+          !Number.isInteger(people) ||
+          people < 1
+        ) {
+          $("tipError").textContent =
+            "Enter a valid bill, tip (0–100%) and people (at least 1).";
+          for (const id of ["tipAmount", "total", "perPerson"])
+            $(id).textContent = "—";
+          return;
+        }
+        $("tipError").textContent = "";
+        const t = (bill * tip) / 100,
+          total = bill + t,
+          c = $("tipCurrency").value;
+        $("tipAmount").textContent = money(t, c);
+        $("total").textContent = money(total, c);
+        $("perPerson").textContent = money(total / people, c);
+      }
+      function syncChips() {
+        for (const b of document.querySelectorAll("[data-tip]"))
+          b.classList.toggle(
+            "active",
+            Number(b.dataset.tip) === Number($("tip").value),
+          );
+      }
+      for (const b of document.querySelectorAll("[data-tip]"))
+        b.addEventListener("click", () => {
+          $("tip").value = b.dataset.tip;
+          syncChips();
+          calcTip();
         });
-        return;
-      }
-
-      el('tipError').textContent = '';
-      const tipMoney = (bill * tip) / 100;
-      const total = bill + tipMoney;
-
-      el('perPerson').textContent = money(total / people, selectedCurrency);
-      el('tipAmount').textContent = money(tipMoney, selectedCurrency);
-      el('grandTotal').textContent = money(total, selectedCurrency);
-      el('tipPerPerson').textContent = money(tipMoney / people, selectedCurrency);
-
-      triggerPop(el('perPerson'));
-    }
-
-    // Tip Calculator Event Listeners
-    el('tipCurrency').addEventListener('change', calculateTip);
-    el('bill').addEventListener('input', calculateTip);
-    el('people').addEventListener('input', calculateTip);
-    el('tip').addEventListener('input', calculateTip);
-
-    // Quick Tip Preset Buttons
-    document.querySelectorAll('[data-tip]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        el('tip').value = btn.dataset.tip;
-        calculateTip();
-      });
-    });
-
-    // People Counter Buttons (+ and -)
-    el('minus').addEventListener('click', function () {
-      const current = Number(el('people').value) || 1;
-      el('people').value = Math.max(1, current - 1);
-      calculateTip();
-    });
-
-    el('plus').addEventListener('click', function () {
-      const current = Number(el('people').value) || 0;
-      el('people').value = Math.min(1000, current + 1);
-      calculateTip();
-    });
-
-    // Reset Tip Calculator
-    el('resetTip').addEventListener('click', function () {
-      el('bill').value = 1250;
-      el('tipCurrency').value = 'INR';
-      el('tip').value = 15;
-      el('people').value = 2;
-      calculateTip();
-      notify('Tip calculator reset');
-    });
-
-    // Copy Tip Breakdown to Clipboard
-    el('copyTip').addEventListener('click', function () {
-      if (el('tipError').textContent) {
-        return notify('Please fix the bill values first');
-      }
-      const summary = 'Tip: ' + el('tipAmount').textContent +
-                      ' | Total: ' + el('grandTotal').textContent +
-                      ' | Per Person: ' + el('perPerson').textContent;
-      copyText(summary);
-    });
-
-    /* =========================================================
-       MODULE 2: CURRENCY CONVERTER LOGIC
-       ========================================================= */
-    let history = [];
-    let lastConversion = '';
-
-    function refreshSymbol() {
-      el('currencySymbol').textContent = symbols[el('from').value] || '$';
-    }
-
-    function convertCurrency(save) {
-      const amount = Number(el('amount').value);
-      const from = el('from').value;
-      const to = el('to').value;
-
-      if (el('amount').value.trim() === '' || !Number.isFinite(amount) || amount < 0) {
-        el('currencyError').textContent = 'Please enter a valid amount of 0 or more.';
-        el('converted').textContent = '—';
-        lastConversion = '';
-        return;
-      }
-
-      el('currencyError').textContent = '';
-
-      const result = (amount * (usdValue[from] || 1)) / (usdValue[to] || 1);
-      const rate = (usdValue[from] || 1) / (usdValue[to] || 1);
-
-      el('fromAmount').textContent = money(amount, from) + ' equals';
-      el('converted').textContent = money(result, to);
-      el('rateLine').textContent = '1 ' + from + ' ≈ ' + rate.toLocaleString('en-US', { maximumFractionDigits: 5 }) + ' ' + to;
-
-      lastConversion = money(amount, from) + ' → ' + money(result, to);
-
-      triggerPop(el('converted'));
-
-      if (save) {
-        history.unshift(lastConversion);
-        history = history.slice(0, 5);
-        renderHistory();
-        notify('Conversion saved to history');
-      }
-    }
-
-    function renderHistory() {
-      const list = el('historyList');
-      list.innerHTML = '';
-
-      if (history.length === 0) {
-        const li = document.createElement('li');
-        li.textContent = 'Your conversions will appear here.';
-        list.appendChild(li);
-        return;
-      }
-
-      history.forEach(function (item, index) {
-        const li = document.createElement('li');
-        const label = document.createElement('b');
-        label.textContent = item;
-        const number = document.createElement('span');
-        number.textContent = '#' + (index + 1);
-
-        li.appendChild(label);
-        li.appendChild(number);
-        list.appendChild(li);
-      });
-    }
-
-    // Popular Currency Pair Buttons
-    document.querySelectorAll('[data-pair]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        const pair = button.dataset.pair.split(',');
-        el('from').value = pair[0];
-        el('to').value = pair[1];
-        refreshSymbol();
-        convertCurrency(false);
-      });
-    });
-
-    // Currency Event Listeners
-    el('convert').addEventListener('click', function () {
-      convertCurrency(true);
-    });
-
-    el('amount').addEventListener('input', function () {
-      convertCurrency(false);
-    });
-
-    el('from').addEventListener('change', function () {
-      refreshSymbol();
-      convertCurrency(false);
-    });
-
-    el('to').addEventListener('change', function () {
-      convertCurrency(false);
-    });
-
-    // Swap From and To Currencies (360 Rotation Animation)
-    el('swap').addEventListener('click', function () {
-      const oldFrom = el('from').value;
-      el('from').value = el('to').value;
-      el('to').value = oldFrom;
-      refreshSymbol();
-      convertCurrency(false);
-    });
-
-    // Reset Currency Converter
-    el('resetCurrency').addEventListener('click', function () {
-      el('amount').value = 100;
-      el('from').value = 'USD';
-      el('to').value = 'INR';
-      refreshSymbol();
-      convertCurrency(false);
-      notify('Currency converter reset');
-    });
-
-    // Clear Conversion History
-    el('clearHistory').addEventListener('click', function () {
-      history = [];
-      renderHistory();
-      notify('History cleared');
-    });
-
-    // Copy Conversion Result
-    el('copyCurrency').addEventListener('click', function () {
-      if (lastConversion) {
-        copyText(lastConversion);
-      } else {
-        notify('Please enter a valid amount first');
-      }
-    });
-
-    /* =========================================================
-       MODULE 3: UTILITY & THEME TOGGLE
-       ========================================================= */
-    function copyText(text) {
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(function () {
-          notify('Copied to clipboard!');
-        }).catch(function () {
-          fallbackCopy(text);
+      for (const id of ["bill", "tip", "people", "tipCurrency"])
+        $(id).addEventListener("input", () => {
+          syncChips();
+          calcTip();
         });
-      } else {
-        fallbackCopy(text);
+      $("calculateTip").addEventListener("click", calcTip);
+      $("resetTip").addEventListener("click", () => {
+        $("tipCurrency").value = "INR";
+        $("bill").value = "1200";
+        $("tip").value = "10";
+        $("people").value = "2";
+        syncChips();
+        calcTip();
+      });
+      let rates = null,
+        rateBase = "",
+        rateDate = "",
+        rateSource = "",
+        loading = false,
+        manualMode = false;
+      function status(message, kind = "") {
+        $("status").textContent = message;
+        $("status").className = "status " + kind;
       }
-    }
-
-    function fallbackCopy(text) {
-      const box = document.createElement('textarea');
-      box.value = text;
-      box.style.position = 'fixed';
-      box.style.opacity = '0';
-      document.body.appendChild(box);
-      box.select();
-      try {
-        document.execCommand('copy');
-        notify('Copied to clipboard!');
-      } catch (err) {
-        notify('Copy not supported in this browser');
+      function syncManualLabels() {
+        $("manualFrom").textContent = $("from").value;
+        $("manualTo").textContent = $("to").value;
       }
-      box.remove();
-    }
-
-    // Dark / Light Mode Toggle
-    el('themeBtn').addEventListener('click', function () {
-      document.body.classList.toggle('dark');
-      const isDark = document.body.classList.contains('dark');
-      el('themeBtn').textContent = isDark ? '☀ Light mode' : '☾ Dark mode';
-    });
-
-    /* =========================================================
-       INITIALIZATION
-       ========================================================= */
-    calculateTip();
-    refreshSymbol();
-    convertCurrency(false);
-
-    console.log('%cSplitly — Project 1: Tip & Currency Converter initialized.', 'color: #6d51f3; font-weight: bold; font-size: 13px;');
-  </script>
-</body>
+      function convert() {
+        const amount = Number($("amount").value),
+          from = $("from").value,
+          to = $("to").value;
+        if (
+          !$("amount").value.trim() ||
+          !Number.isFinite(amount) ||
+          amount < 0
+        ) {
+          $("converted").textContent = "Invalid amount";
+          $("detail").textContent = "Enter an amount of 0 or more.";
+          return;
+        }
+        if (from === to) {
+          $("converted").textContent = money(amount, to);
+          $("detail").textContent = "Same currency — no exchange rate needed.";
+          return;
+        }
+        if (manualMode) {
+          const r = Number($("manualRate").value);
+          if (!Number.isFinite(r) || r <= 0) {
+            $("converted").textContent = "Enter manual rate";
+            $("detail").textContent = "Manual rate must be greater than zero.";
+            return;
+          }
+          $("converted").textContent = money(amount * r, to);
+          $("detail").textContent =
+            `MANUAL rate: 1 ${from} = ${r} ${to} (entered by user, not live)`;
+          return;
+        }
+        if (!rates) {
+          $("converted").textContent = loading
+            ? "Loading rates…"
+            : "Rates unavailable";
+          $("detail").textContent =
+            "Online sources not reachable. Retry, or expand the manual-rate backup.";
+          return;
+        }
+        const a = rates[from.toLowerCase()],
+          b = rates[to.toLowerCase()];
+        if (!(a > 0 && b > 0)) {
+          $("converted").textContent = "Rate unavailable";
+          $("detail").textContent =
+            "This currency pair was not included in the downloaded data.";
+          return;
+        }
+        const rate = b / a;
+        $("converted").textContent = money(amount * rate, to);
+        $("detail").textContent =
+          `1 ${from} = ${rate.toLocaleString("en-US", { maximumSignificantDigits: 9 })} ${to} · ${rateDate} · ${rateSource}`;
+      }
+      async function fetchJson(url, timeout = 10000) {
+        const controller = new AbortController(),
+          timer = setTimeout(() => controller.abort(), timeout);
+        try {
+          const response = await fetch(url, {
+            signal: controller.signal,
+            cache: "no-store",
+          });
+          if (!response.ok) throw Error("HTTP " + response.status);
+          return await response.json();
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+      function validDate(value) {
+        if (!value) return false;
+        const t = Date.parse(value);
+        return (
+          Number.isFinite(t) &&
+          t <= Date.now() + 86400000 &&
+          Date.now() - t < 8 * 86400000
+        );
+      }
+      function validateRates(data) {
+        return (
+          data &&
+          Object.keys(currencyNames).every(
+            (code) =>
+              Number.isFinite(data[code.toLowerCase()]) &&
+              data[code.toLowerCase()] > 0,
+          )
+        );
+      }
+      async function attemptSource(source) {
+        let data, date, table;
+        if (source === 0) {
+          const x = await fetchJson(
+            "https://latest.currency-api.pages.dev/v1/currencies/usd.json",
+          );
+          data = x.usd;
+          date = x.date;
+          table = data;
+        } else if (source === 1) {
+          const x = await fetchJson(
+            "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json",
+          );
+          data = x.usd;
+          date = x.date;
+          table = data;
+        } else {
+          const x = await fetchJson("https://open.er-api.com/v6/latest/USD");
+          if (x.result !== "success" || x.base_code !== "USD")
+            throw Error("Invalid API response");
+          table = Object.fromEntries(
+            Object.entries(x.rates).map(([k, v]) => [k.toLowerCase(), v]),
+          );
+          date = x.time_last_update_utc;
+        }
+        if (!validDate(date) || !validateRates(table))
+          throw Error("Missing or old rate information");
+        return {
+          table,
+          date,
+          source: [
+            "Currency API (Cloudflare)",
+            "Currency API (jsDelivr)",
+            "ExchangeRate-API",
+          ][source],
+        };
+      }
+      let requestId = 0;
+      async function loadRates() {
+        const id = ++requestId;
+        loading = true;
+        manualMode = false;
+        rates = null;
+        status("Checking exchange-rate providers…");
+        convert();
+        for (let i = 0; i < 3; i++) {
+          try {
+            status(`Trying rate source ${i + 1} of 3…`);
+            const result = await attemptSource(i);
+            if (id !== requestId) return;
+            rates = result.table;
+            rateDate = result.date.slice(0, 16);
+            rateSource = result.source;
+            loading = false;
+            status("Rates loaded · " + rateDate + " · " + rateSource, "ok");
+            convert();
+            return;
+          } catch (e) {
+            console.warn("Rate source failed:", i + 1, e.message);
+          }
+        }
+        if (id !== requestId) return;
+        loading = false;
+        status(
+          "Online rates could not load. Check internet or use Manual Rate below.",
+          "error",
+        );
+        convert();
+      }
+      $("convert").addEventListener("click", convert);
+      $("refresh").addEventListener("click", loadRates);
+      $("swap").addEventListener("click", () => {
+        const old = $("from").value;
+        $("from").value = $("to").value;
+        $("to").value = old;
+        manualMode = false;
+        syncManualLabels();
+        convert();
+      });
+      for (const id of ["from", "to"])
+        $(id).addEventListener("change", () => {
+          manualMode = false;
+          syncManualLabels();
+          convert();
+        });
+      $("amount").addEventListener("input", convert);
+      $("manualConvert").addEventListener("click", () => {
+        manualMode = true;
+        status("Manual rate in use — this is not a live rate.");
+        convert();
+      });
+      $("manualRate").addEventListener("input", () => {
+        if (manualMode) convert();
+      });
+      syncManualLabels();
+      calcTip();
+      loadRates();
+    </script>
+  </body>
 </html>
