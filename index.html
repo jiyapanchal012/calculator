@@ -438,29 +438,7 @@
             <div id="converted" class="value">Loading…</div>
             <div id="detail" class="rate">Please wait for live rate data.</div>
           </div>
-          <details class="manual" id="manualPanel">
-            <summary>Backup: Enter a known exchange rate manually</summary>
-            <p>
-              Only use this if online services are blocked. Enter how much
-              <b>1 FROM</b> equals in <b>TO</b>. The output will be labeled as
-              manually entered, not live.
-            </p>
-            <div class="field">
-              <label for="manualRate"
-                >1 <span id="manualFrom">INR</span> = how many
-                <span id="manualTo">USD</span>?</label
-              ><input
-                id="manualRate"
-                type="number"
-                min="0"
-                step="any"
-                placeholder="Enter a verified rate"
-              />
-            </div>
-            <button type="button" class="secondary" id="manualConvert">
-              Use manual rate
-            </button>
-          </details>
+          
           <p class="help">
             Rate source and publication date are displayed with each online
             conversion. Rates are indicative; your bank may charge a spread.
