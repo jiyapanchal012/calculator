@@ -256,26 +256,6 @@
         color: #687792;
         margin: 13px 0 0;
       }
-      .manual {
-        margin-top: 13px;
-        border: 1px dashed #c8baff;
-        border-radius: 12px;
-        padding: 13px;
-        background: #faf9ff;
-      }
-      .manual summary {
-        cursor: pointer;
-        font-weight: 750;
-        color: #5846c5;
-      }
-      .manual p {
-        margin: 8px 0;
-        font-size: 12px;
-        color: #64708c;
-      }
-      .manual .field {
-        margin: 8px 0;
-      }
       .note {
         font-size: 12px;
         color: #a23e55;
@@ -438,7 +418,6 @@
             <div id="converted" class="value">Loading…</div>
             <div id="detail" class="rate">Please wait for live rate data.</div>
           </div>
-          
           <p class="help">
             Rate source and publication date are displayed with each online
             conversion. Rates are indicative; your bank may charge a spread.
@@ -549,18 +528,12 @@
         calcTip();
       });
       let rates = null,
-        rateBase = "",
         rateDate = "",
         rateSource = "",
-        loading = false,
-        manualMode = false;
+        loading = false;
       function status(message, kind = "") {
         $("status").textContent = message;
         $("status").className = "status " + kind;
-      }
-      function syncManualLabels() {
-        $("manualFrom").textContent = $("from").value;
-        $("manualTo").textContent = $("to").value;
       }
       function convert() {
         const amount = Number($("amount").value),
@@ -580,24 +553,12 @@
           $("detail").textContent = "Same currency — no exchange rate needed.";
           return;
         }
-        if (manualMode) {
-          const r = Number($("manualRate").value);
-          if (!Number.isFinite(r) || r <= 0) {
-            $("converted").textContent = "Enter manual rate";
-            $("detail").textContent = "Manual rate must be greater than zero.";
-            return;
-          }
-          $("converted").textContent = money(amount * r, to);
-          $("detail").textContent =
-            `MANUAL rate: 1 ${from} = ${r} ${to} (entered by user, not live)`;
-          return;
-        }
         if (!rates) {
           $("converted").textContent = loading
             ? "Loading rates…"
             : "Rates unavailable";
           $("detail").textContent =
-            "Online sources not reachable. Retry, or expand the manual-rate backup.";
+            "Online rates unavailable. Check your internet connection and click Refresh rates.";
           return;
         }
         const a = rates[from.toLowerCase()],
@@ -687,8 +648,8 @@
       async function loadRates() {
         const id = ++requestId;
         loading = true;
-        manualMode = false;
-        rates = null;
+        // Keep the last successful rates while refreshing, so a failed refresh
+        // does not remove a working conversion.
         status("Checking exchange-rate providers…");
         convert();
         for (let i = 0; i < 3; i++) {
@@ -710,7 +671,9 @@
         if (id !== requestId) return;
         loading = false;
         status(
-          "Online rates could not load. Check internet or use Manual Rate below.",
+          rates
+            ? "Rate refresh failed. Showing the previously loaded rates."
+            : "Online rates could not load. Check your internet connection and retry.",
           "error",
         );
         convert();
@@ -721,26 +684,13 @@
         const old = $("from").value;
         $("from").value = $("to").value;
         $("to").value = old;
-        manualMode = false;
-        syncManualLabels();
         convert();
       });
       for (const id of ["from", "to"])
         $(id).addEventListener("change", () => {
-          manualMode = false;
-          syncManualLabels();
           convert();
         });
       $("amount").addEventListener("input", convert);
-      $("manualConvert").addEventListener("click", () => {
-        manualMode = true;
-        status("Manual rate in use — this is not a live rate.");
-        convert();
-      });
-      $("manualRate").addEventListener("input", () => {
-        if (manualMode) convert();
-      });
-      syncManualLabels();
       calcTip();
       loadRates();
     </script>
